@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メーカーダッシュボード</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f1c40f;
+            --gray-color: #95a5a6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        /* サイドバー */
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+        }
+
+        .company-info {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .company-info h1 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-bottom: 10px;
+        }
+
+        .nav-menu a {
+            color: #ecf0f1;
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            padding: 30px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
+
+        /* 通知リスト */
+        .notification-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: white;
+        }
+
+        .badge-request {
+            background-color: var(--primary-color);
+        }
+
+        .badge-schedule {
+            background-color: var(--secondary-color);
+        }
+
+        .badge-alert {
+            background-color: var(--danger-color);
+        }
+
+        /* リクエストリスト */
+        .request-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .request-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .request-info {
+            flex-grow: 1;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            font-size: 0.9rem;
+            transition: opacity 0.3s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-accept {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-reject {
+            background-color: var(--danger-color);
+        }
+
+        /* カレンダー */
+        .calendar-container {
+            margin-top: 20px;
+        }
+
+        .event-item {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        /* 統計グラフ */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* モーダル */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 28px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- サイドバー -->
+        <div class="sidebar">
+            <div class="company-info">
+                <h1>テックメーカー株式会社</h1>
+                <p>ID: M12345</p>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#" class="active">ダッシュボード</a></li>
+                <li><a href="#">展示会スケジュール</a></li>
+                <li><a href="#">商品管理</a></li>
+                <li><a href="#">キャンペーン管理</a></li>
+                <li><a href="#">設定</a></li>
+            </ul>
+        </div>
+
+        <!-- メインコンテンツ -->
+        <div class="main-content">
+            <!-- 統計情報 -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-value">15</div>
+                    <div class="stat-label">待機中のリクエスト</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">今月の展示会予定</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">42</div>
+                    <div class="stat-label">登録商品数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">89%</div>
+                    <div class="stat-label">マッチング成立率</div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- 新着通知 -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">新着通知</h2>
+                    </div>
+                    <div class="notification-list">
+                        <div class="notification-item">
+                            <span class="notification-badge badge-request">リクエスト</span>
+                            <div>
+                                <strong>ABC商事様</strong>から新しいマッチングリクエストが届いています
+                                <div class="text-muted">2分前</div>
+                            </div>
+                        </div>
+                        <div class="notification-item">
+                            <span class="notification-badge badge-schedule">スケジュール</span>
+                            <div>
+                                <strong>DEF産業様</strong>との展示会が確定しました
+                                <div class="text-muted">1時間前</div>
+                            </div>
+                        </div>
+                        <div class="notification-item">
+                            <span class="notification-badge badge-alert">重要</span>
+                            <div>
+                                <strong>システム通知:</strong> 新機能のお知らせ
+                                <div class="text-muted">3時間前</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- マッチングリクエスト -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">マッチングリクエスト</h2>
+                    </div>
+                    <div class="request-list">
+                        <div class="request-item">
+                            <div class="request-info">
+                                <strong>ABC商事様</strong>
+                                <div>希望日: 2024/11/25</div>
+                                <div>商品カテゴリー: 電化製品</div>
+                            </div>
+                            <div class="request-actions">
+                                <button class="btn btn-accept">承認</button>
+                                <button class="btn btn-reject">辞退</button>
+                            </div>
+                        </div>
+                        <div class="request-item">
+                            <div class="request-info">
+                                <strong>XYZ株式会社様</strong>
+                                <div>希望日: 2024/11/28</div>
+                                <div>商品カテゴリー: 電化製品</div>
+                            </div>
+                            <div class="request-actions">
+                                <button class="btn btn-accept">承認</button>
+                                <button class="btn btn-reject">辞退</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- スケジュール -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">今後の展示会スケジュール</h2>
+                    </div>
+                    <div class="calendar-container">
+                        <input type="text" id="calendar" style="width: 100%;">
+                        <div class="event-list">
+                            <div class="event-item">
+                                <strong>ABC商事展示会</strong>
+                                <div>11月25日(月) 10:00-17:00</div>
+                                <div>場所: ABC商事本社</div>
+                            </div>
+                            <div class="event-item">
+                                <strong>XYZ株式会社展示会</strong>
+                                <div>11月28日(木) 13:00-18:00</div>
+                                <div>場所: XYZショールーム</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 統計グラフ -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">展示会実績</h2>
+                </div>
+                <canvas id="statsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ja.min.js"></script>
+    <script>
+        // カレンダーの初期化
+        flatpickr("#calendar", {
+            mode: "multiple",
+            locale: "ja",
+            dateFormat: "Y/m/d",
+            defaultDate: ["2024-11-25", "2024-11-28"],
+            disable: ["2024-11-24", "2024-11-26"],
+            inline: true
+        });
+
+        // 統計グラフの初期化
+        const ctx = document.getElementById('statsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['6月', '7月', '8月', '9月', '10月', '11月'],
+                datasets: [{
+                    label: '展示会実施数',
+                    data: [5, 8, 6, 9, 7, 11],
+                    borderColor: '#3498db',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+
+                </script>

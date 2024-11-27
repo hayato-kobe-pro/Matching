@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メーカー コンテンツ登録システム</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .notifications {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .notification-item.unread {
+            background-color: #f0f7ff;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            min-height: 100px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .status-調整中 { background-color: #ffd700; }
+        .status-フィードバック { background-color: #90ee90; }
+        .status-取り消し { background-color: #ffcccb; }
+
+        #imagePreview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+        }
+
+        .event-details {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 4px;
+        }
+
+        .product-item {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.remove-button {
+    background-color: #ff4444;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.remove-button:hover {
+    background-color: #cc0000;
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>メーカー コンテンツ登録システム</h1>
+
+        <!-- お知らせセクション -->
+        <div class="section">
+            <h2>お知らせ</h2>
+            <div class="notifications" id="notificationList"></div>
+        </div>
+
+        <!-- スケジュール登録セクション -->
+        <div class="section">
+            <h2>スケジュール登録</h2>
+            <div class="form-group">
+                <label>日時</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="date" id="scheduleDate">
+                    <input type="time" id="scheduleTime">
+                    <button onclick="addSchedule()">追加</button>
+                </div>
+            </div>
+            <div id="scheduleList">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>日付</th>
+                            <th>時間</th>
+                            <th>ステータス</th>
+                            <th>イベント詳細</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 商品情報登録セクション -->
+        <div class="section">
+            <h2>商品情報登録</h2>
+            <div class="form-group">
+                <label>商品名</label>
+                <input type="text" id="productName">
+            </div>
+            <div class="form-group">
+                <label>商品画像</label>
+                <input type="file" id="productImage" accept="image/*" onchange="previewImage(event)">
+                <img id="imagePreview">
+            </div>
+            <div class="form-group">
+                <label>商品説明</label>
+                <textarea id="productDescription"></textarea>
+            </div>
+            <div id="productList"></div>
+            <div class="form-group">
+                <button onclick="addProductForm()">商品を追加</button>
+            </div>
+        </div>
+
+        <!-- キャンペーン情報登録セクション -->
+        <div class="section">
+            <h2>キャンペーン情報登録</h2>
+            <div class="form-group">
+                <label>キャンペーン名</label>
+                <input type="text" id="campaignName">
+            </div>
+            <div class="form-group">
+                <label>期間</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="date" id="campaignStart">
+                    <span>〜</span>
+                    <input type="date" id="campaignEnd">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>キャンペーン概要</label>
+                <textarea id="campaignDescription"></textarea>
+            </div>
+            <button onclick="saveContent()">登録</button>
+        </div>
+
+        <!-- レポート登録セクション -->
+        <div class="section">
+            <h2>イベントレポート登録</h2>
+            <div class="form-group">
+                <label>対象イベント</label>
+                <select id="reportSchedule"></select>
+            </div>
+            <div class="form-group">
+                <label>レポート内容</label>
+                <textarea id="reportContent"></textarea>
+            </div>
+            <button onclick="submitReport()">レポート提出</button>
+        </div>
+    </div>
+
+    <script>
+        // 初期データ
+        let notifications = [
+            {
+                id: 1,
+                type: 'feedback',
+                title: '山善からのフィードバック',
+                content: '7月15日のイベントについて主催店から選択されました',
+                date: '2024-07-01',
+                isRead: false
+            },
+            {
+                id: 2,
+                type: 'request',
+                title: '代替スケジュール提案',
+                content: '7月20日の代替として7月25日の提案があります',
+                date: '2024-07-02',
+                isRead: false
+            }
+        ];
+
+        let schedules = [
+            {
+                id: 1,
+                date: '2024-07-15',
+                time: '10:00',
+                status: 'フィードバック',
+                eventDetails: {
+                    title: '夏季展示会',
+                    location: '東京展示場',
+                    description: '新商品展示会'
+                }
+            }
+        ];
+
+        // 画面初期化
+        window.onload = function() {
+            renderNotifications();
+            renderSchedules();
+            updateReportScheduleOptions();
+        };
+
+        // お知らせ表示
+        function renderNotifications() {
+            const notificationList = document.getElementById('notificationList');
+            notificationList.innerHTML = notifications.map(notification => `
+                <div class="notification-item ${notification.isRead ? '' : 'unread'}" 
+                     onclick="readNotification(${notification.id})">
+                    <strong>${notification.title}</strong>
+                    <p>${notification.content}</p>
+                    <small>${notification.date}</small>
+                </div>
+            `).join('');
+        }
+
+        // スケジュール表示
+        function renderSchedules() {
+            const scheduleTableBody = document.getElementById('scheduleTableBody');
+            scheduleTableBody.innerHTML = schedules.map(schedule => `
+                <tr>
+                    <td>${schedule.date}</td>
+                    <td>${schedule.time}</td>
+                    <td>
+                        <span class="status-badge status-${schedule.status}">
+                            ${schedule.status}
+                        </span>
+                    </td>
+                    <td>
+                        ${schedule.eventDetails ? `
+                            <div class="event-details">
+                                <strong>${schedule.eventDetails.title}</strong><br>
+                                場所: ${schedule.eventDetails.location}<br>
+                                詳細: ${schedule.eventDetails.description}
+                            </div>
+                        ` : '-'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // スケジュール追加
+        function addSchedule() {
+            const date = document.getElementById('scheduleDate').value;
+            const time = document.getElementById('scheduleTime').value;
+            
+            if (!date || !time) {
+                alert('日付と時間を入力してください');
+                return;
+            }
+
+            schedules.push({
+                id: schedules.length + 1,
+                date: date,
+                time: time,
+                status: '調整中',
+                eventDetails: null
+            });
+
+            renderSchedules();
+            updateReportScheduleOptions();
+        }
+
+        // 商品情報の配列
+let products = [];
+let productIdCounter = 1;
+
+// 商品フォームの追加
+function addProductForm() {
+    const productId = productIdCounter++;
+    products.push({
+        id: productId,
+        name: '',
+        image: null,
+        description: ''
+    });
+    renderProductList();
+}
+
+// 商品リストの描画
+function renderProductList() {
+    const productList = document.getElementById('productList');
+    productList.innerHTML = products.map(product => `
+        <div class="product-item" id="product-${product.id}">
+            <div class="product-header">
+                <h3>商品 ${product.id}</h3>
+                <button class="remove-button" onclick="removeProduct(${product.id})">削除</button>
+            </div>
+            <div class="form-group">
+                <label>商品名</label>
+                <input type="text" 
+                    class="product-name" 
+                    value="${product.name}"
+                    onchange="updateProduct(${product.id}, 'name', this.value)">
+            </div>
+            <div class="form-group">
+                <label>商品画像</label>
+                <input type="file" 
+                    class="product-image" 
+                    accept="image/*" 
+                    onchange="handleProductImage(${product.id}, event)">
+                <img class="product-image-preview" id="imagePreview-${product.id}" 
+                    style="${product.image ? '' : 'display: none'}"
+                    src="${product.image || ''}" 
+                    alt="商品画像プレビュー">
+            </div>
+            <div class="form-group">
+                <label>商品説明</label>
+                <textarea 
+                    class="product-description"
+                    onchange="updateProduct(${product.id}, 'description', this.value)">${product.description}</textarea>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 商品の削除
+function removeProduct(productId) {
+    products = products.filter(product => product.id !== productId);
+    renderProductList();
+}
+
+// 商品情報の更新
+function updateProduct(productId, field, value) {
+    products = products.map(product => {
+        if (product.id === productId) {
+            return { ...product, [field]: value };
+        }
+        return product;
+    });
+}
+
+// 商品画像のハンドリング
+function handleProductImage(productId, event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imageUrl = e.target.result;
+            updateProduct(productId, 'image', imageUrl);
+            const preview = document.getElementById(`imagePreview-${productId}`);
+            preview.src = imageUrl;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// コンテンツ保存の更新
+function saveContent() {
+    // 商品情報とキャンペーン情報の取得
+    const campaignInfo = {
+        name: document.getElementById('campaignName').value,
+        startDate: document.getElementById('campaignStart').value,
+        endDate: document.getElementById('campaignEnd').value,
+        description: document.getElementById('campaignDescription').value
+    };
+
+    // 実際のアプリケーションではここでサーバーに送信
+    console.log('Saving products:', products);
+    console.log('Saving campaign info:', campaignInfo);
+    
+    alert('コンテンツが登録されました');
+}
+
+        // 画像プレビュー
+        function previewImage(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('imagePreview');
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+            };
+
+            if (file) {
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // コンテンツ保存
+        function saveContent() {
+            // 商品情報とキャンペーン情報の取得
+            const productInfo = {
+                name: document.getElementById('productName').value,
+                description: document.getElementById('productDescription').value,
+                image: document.getElementById('productImage').files[0]
+            };
+
+            const campaignInfo = {
+                name: document.getElementById('campaignName').value,
+                startDate: document.getElementById('campaignStart').value,
+                endDate: document.getElementById('campaignEnd').value,
+                description: document.getElementById('campaignDescription').value
+            };
+
+            // 実際のアプリケーションではここでサーバーに送信
+            console.log('Saving product info:', productInfo);
+            console.log('Saving campaign info:', campaignInfo);
+            
+            alert('コンテンツが登録されました');
+        }
+
+        // レポート対象スケジュール選択肢更新
+        function updateReportScheduleOptions() {
+            const reportSchedule = document.getElementById('reportSchedule');
+            reportSchedule.innerHTML = schedules.map(schedule => `
+                <option value="${schedule.id}">
+                    ${schedule.date} ${schedule.time} - ${schedule.status}
+                </option>
+            `).join('');
+        }
+
+        // レポート提出
+        function submitReport() {
+            const scheduleId = document.getElementById('reportSchedule').value;
+            const content = document.getElementById('reportContent').value;
+
+            if (!content) {
+                alert('レポート内容を入力してください');
+                return;
+            }
+
+            // 実際のアプリケーションではここでサーバーに送信
+            console.log('Submitting report:', {
+                scheduleId: scheduleId,
+                content: content
+            });
+
+            alert('レポートが提出されました');
+            document.getElementById('reportContent').value = '';
+        }
+
+        // お知らせ既読処理
+        function readNotification(id) {
+            notifications = notifications.map(notification => 
+                notification.id === id 
+                    ? { ...notification, isRead: true }
+                    : notification
+            );
+            renderNotifications();
+        }
+    </script>
+</body>
+</html>
