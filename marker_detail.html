@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メーカー詳細情報</title>
+    <style>
+        :root {
+            --primary-color: #0066cc;
+            --secondary-color: #f8f9fa;
+            --accent-color: #ff6b6b;
+            --text-color: #333;
+            --border-color: #dee2e6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .manufacturer-header {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .manufacturer-name {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .products-section {
+            margin-bottom: 3rem;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-name {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .product-description {
+            color: var(--text-color);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .campaign-section {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .campaign-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .campaign-title {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        .campaign-period {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        .campaign-content {
+            background-color: var(--secondary-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        /* スケジュールセクション */
+    .schedule-section {
+        background: white;
+        border-radius: 10px;
+        padding: 2rem;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .schedule-header {
+        margin-bottom: 1.5rem;
+    }
+
+    .schedule-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .schedule-card {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 1rem;
+        background: var(--secondary-color);
+        transition: all 0.3s ease;
+    }
+
+    .schedule-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .schedule-card.unavailable {
+        opacity: 0.7;
+        background: #f5f5f5;
+        cursor: not-allowed;
+    }
+
+    .schedule-date {
+        font-weight: bold;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .schedule-time {
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+
+    .schedule-status {
+        font-size: 0.875rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .status-available {
+        background-color: var(--success-color);
+        color: black;
+    }
+
+    .status-unavailable {
+        background-color: var(--warning-color);
+        color: black;
+    }
+
+    /* モーダル */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 500px;
+        position: relative;
+    }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .manufacturer-name {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="manufacturer-header">
+            <h1 class="manufacturer-name">山田製作所</h1>
+        </header>
+
+        <section class="products-section">
+            <div class="products-grid">
+                <div class="product-card">
+                    <img src="https://yamazenbizcom.jp/client_info/YAMAZEN/itemimage/cabinet/main-img/018/main-r9x31.jpg" alt="扇風機 dcモーター 30cm" class="product-image">
+                    <div class="product-info">
+                        <h2 class="product-name">扇風機 dcモーター 30cm</h2>
+                        <p class="product-description">
+                            最新のチタンコーティング技術を採用し、従来比200%の耐久性を実現。
+                            独自の刃先形状により、より正確な穴あけ加工が可能になりました。
+                            様々な素材に対応し、作業効率を大幅に向上させます。
+                        </p>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <img src="https://image.rakuten.co.jp/e-kurashi/cabinet/pc_sub/072/39665-01.jpg" alt="スチーム加湿器" class="product-image">
+                    <div class="product-info">
+                        <h2 class="product-name">スチーム加湿器</h2>
+                        <p class="product-description">
+                            Bluetooth接続でスマートフォンと連携し、測定データをリアルタイムで記録。
+                            高精度センサーを搭載し、0.01mm単位での測定が可能です。
+                            充電式バッテリーで最大48時間の連続使用が可能です。
+                        </p>
+                    </div>
+                </div>
+
+                <div class="product-card">
+                    <img src="https://book.yamazen.co.jp/photo/item/I00009033/990/990/trim" alt="電動昇降デスク／ハイエンドモデル" class="product-image">
+                    <div class="product-info">
+                        <h2 class="product-name">電動昇降デスク／ハイエンドモデル</h2>
+                        <p class="product-description">
+                            最新のモーター制御技術により、消費電力を30%削減。
+                            独自の静音設計で作業環境を改善し、作業者の負担を軽減します。
+                            IoT対応で稼働状況の遠隔モニタリングが可能です。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="campaign-section">
+            <div class="campaign-header">
+                <h2 class="campaign-title">年末特別キャンペーン</h2>
+                <div class="campaign-period">期間：2024年12月1日〜12月31日</div>
+            </div>
+            <div class="campaign-content">
+                <p>
+                    期間中、対象製品を2点以上ご購入いただくと、20%のスペシャル割引を適用いたします。
+                    さらに、新製品のECO-1000をご購入の方には、無料で1年間の保守サービスを提供。
+                    専門のサポートスタッフが設置から運用まで丁寧にサポートいたします。
+                </p>
+            </div>
+            
+        </section>
+        <!-- スケジュールセクション -->
+        <section class="schedule-section">
+            <div class="schedule-header">
+                <h2>スケジュール選択</h2>
+                <p>ご希望の日時をお選びください</p>
+            </div>
+        
+            <div class="schedule-grid" id="scheduleGrid">
+                <!-- スケジュールは動的に生成 -->
+            </div>
+        
+            <div class="alternative-schedule">
+                <h3>代替案の提案</h3>
+                <p>希望の日程が選択できない場合は、代替案を提案することができます。</p>
+                <button class="btn btn-primary" onclick="openAlternativeModal()">代替案を提案</button>
+            </div>
+        </section>
+        
+        <!-- 代替案提案モーダル -->
+        <div class="modal" id="alternativeModal">
+            <div class="modal-content">
+                <h3>代替案の提案</h3>
+                <form id="alternativeForm">
+                    <div class="form-group">
+                        <label for="altDate">希望日</label>
+                        <input type="date" id="altDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="altTime">希望時間</label>
+                        <input type="time" id="altTime" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="altReason">提案理由</label>
+                        <textarea id="altReason" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-secondary" onclick="closeAlternativeModal()">キャンセル</button>
+                        <button type="submit" class="btn btn-primary">提案を送信</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- JavaScript -->
+        <script>
+            // スケジュールデータ
+            const schedules = [
+                { id: 1, date: '2024-12-01', time: '10:00', available: true, selectable: true },
+                { id: 2, date: '2024-12-02', time: '14:00', available: false, selectable: true },
+                { id: 3, date: '2024-12-03', time: '15:00', available: true, selectable: false },
+                { id: 4, date: '2024-12-04', time: '13:00', available: true, selectable: true }
+            ];
+        
+            // スケジュール表示
+            function renderSchedules() {
+                const scheduleGrid = document.getElementById('scheduleGrid');
+                scheduleGrid.innerHTML = schedules.map(schedule => `
+                    <div class="schedule-card ${!schedule.available || !schedule.selectable ? 'unavailable' : ''}">
+                        <div class="schedule-date">${formatDate(schedule.date)}</div>
+                        <div class="schedule-time">${schedule.time}</div>
+                        <div class="schedule-status ${schedule.available ? 'status-available' : 'status-unavailable'}">
+                            ${schedule.available ? '予約可能' : '予約済み'}
+                        </div>
+                        ${getScheduleButton(schedule)}
+                    </div>
+                `).join('');
+            }
+        
+            // スケジュールボタンの生成
+            function getScheduleButton(schedule) {
+                if (!schedule.selectable) {
+                    return '<button class="btn btn-secondary" disabled>選択不可</button>';
+                }
+                if (!schedule.available) {
+                    return '<button class="btn btn-secondary" disabled>選択済み</button>';
+                }
+                return `
+                    <button class="btn btn-primary" 
+                            onclick="selectSchedule(${schedule.id})">
+                        選択する
+                    </button>
+                `;
+            }
+        
+            // 日付フォーマット
+            function formatDate(dateStr) {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('ja-JP', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'short'
+                });
+            }
+        
+            // モーダル制御
+            function openAlternativeModal() {
+                document.getElementById('alternativeModal').style.display = 'flex';
+            }
+        
+            function closeAlternativeModal() {
+                document.getElementById('alternativeModal').style.display = 'none';
+            }
+        
+            // 代替案フォーム送信
+            document.getElementById('alternativeForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const alternativeSchedule = {
+                    date: document.getElementById('altDate').value,
+                    time: document.getElementById('altTime').value,
+                    reason: document.getElementById('altReason').value
+                };
+        
+                // APIエンドポイントへの送信処理を実装
+                console.log('代替案を送信:', alternativeSchedule);
+                
+                closeAlternativeModal();
+                this.reset();
+            });
+        
+            // 初期表示
+            renderSchedules();
+        </script>
