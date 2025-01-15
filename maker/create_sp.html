@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メーカー情報登録</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+            --danger-color: #e74c3c;
+            --border-color: #ddd;
+            --text-color: #333;
+            --heading-color: #2c3e50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f5f5;
+            padding: 10px;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                padding: 30px;
+            }
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        @media (min-width: 768px) {
+            .section {
+                margin-bottom: 40px;
+            }
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--heading-color);
+        }
+
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--heading-color);
+        }
+
+        @media (min-width: 768px) {
+            h2 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .form-group {
+                margin-bottom: 20px;
+            }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--heading-color);
+            font-size: 0.9rem;
+        }
+
+        @media (min-width: 768px) {
+            label {
+                font-size: 1rem;
+            }
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px; /* モバイルでのズームを防ぐ */
+            appearance: none; /* ネイティブのスタイルを削除 */
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+
+        .product-list {
+            margin-top: 20px;
+        }
+
+        .product-item {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .remove-btn {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        @media (max-width: 767px) {
+            .remove-btn {
+                position: relative;
+                right: auto;
+                top: auto;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+            transition: opacity 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .btn {
+                width: auto;
+                margin-bottom: 0;
+                font-size: 14px;
+                padding: 10px 20px;
+            }
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .action-buttons {
+                flex-direction: row;
+                justify-content: center;
+                gap: 15px;
+                margin-top: 30px;
+            }
+        }
+
+        .note {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        @media (min-width: 768px) {
+            .note {
+                font-size: 0.9rem;
+            }
+        }
+
+        .required {
+            color: var(--danger-color);
+            margin-left: 3px;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            padding: 20px;
+            text-align: center;
+            border-radius: 4px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+        }
+
+        /* タッチデバイス向けのスタイル調整 */
+        @media (hover: none) {
+            .btn:hover {
+                opacity: 1;
+            }
+
+            .upload-area {
+                padding: 30px 20px;
+            }
+
+            select {
+                background-color: white;
+            }
+        }
+
+        /* 入力フォームのフォーカス時のスタイル */
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        /* エラー状態のスタイル */
+        .form-group.error input,
+        .form-group.error select,
+        .form-group.error textarea {
+            border-color: var(--danger-color);
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>メーカー情報登録</h1>
+
+        <form id="makerForm">
+            <!-- 基本情報セクション -->
+            <div class="section">
+                <h2>基本情報</h2>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>会社名<span class="required">*</span></label>
+                        <input type="text" name="companyName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>会社名（カナ）<span class="required">*</span></label>
+                        <input type="text" name="companyNameKana" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>事業内容</label>
+                    <textarea name="businessDescription" rows="3"></textarea>
+                </div>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>メインカテゴリー<span class="required">*</span></label>
+                        <select name="mainCategory" required>
+                            <option value="">選択してください</option>
+                            <option value="electronics">電化製品</option>
+                            <option value="food">食品</option>
+                            <option value="fashion">ファッション</option>
+                            <option value="cosmetics">化粧品</option>
+                            <option value="furniture">家具</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>企業サイトURL</label>
+                        <input type="text" name="website">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 担当者情報セクション -->
+            <div class="section">
+                <h2>担当者情報</h2>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>担当者名<span class="required">*</span></label>
+                        <input type="text" name="contactPerson" required>
+                    </div>
+                    <div class="form-group">
+                        <label>部署名</label>
+                        <input type="text" name="department">
+                    </div>
+                    <div class="form-group">
+                        <label>メールアドレス<span class="required">*</span></label>
+                        <input type="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>電話番号<span class="required">*</span></label>
+                        <input type="tel" name="phone" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 製品情報セクション -->
+            <div class="section">
+                <h2>製品情報</h2>
+                <div id="productList" class="product-list">
+                    <!-- 製品アイテムがここに追加されます -->
+                </div>
+                <button type="button" class="btn btn-primary" onclick="addProduct()">製品を追加</button>
+            </div>
+
+            <!-- PRセクション -->
+            <div class="section">
+                <h2>PR情報</h2>
+                <div class="form-group">
+                    <label>PR文</label>
+                    <textarea name="prText" rows="4" placeholder="主催店向けのPR文を入力してください"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>画像アップロード</label>
+                    <div class="upload-area" onclick="document.getElementById('imageUpload').click()">
+                        <div>クリックして画像をアップロード</div>
+                        <div class="note">または画像をドラッグ＆ドロップ</div>
+                    </div>
+                    <input type="file" id="imageUpload" style="display: none" multiple accept="image/*">
+                </div>
+            </div>
+
+            <!-- 送信ボタン -->
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-success">登録する</button>
+                <button type="button" class="btn btn-warning" onclick="saveDraft()">下書き保存</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ja.min.js"></script>
+    <script>
+        // モバイル対応のバリデーション関数
+        function validateForm() {
+            let isValid = true;
+            const form = document.getElementById('makerForm');
+            const requiredFields = form.querySelectorAll('[required]');
+
+            requiredFields.forEach(field => {
+                const formGroup = field.closest('.form-group');
+                if (!field.value.trim()) {
+                    isValid = false;
+                    formGroup.classList.add('error');
+                    // エラーメッセージが存在しない場合のみ追加
+                    if (!formGroup.querySelector('.error-message')) {
+                        const errorMessage = document.createElement('div');
+                        errorMessage.className = 'error-message';
+                        errorMessage.textContent = '必須項目です';
+                        formGroup.appendChild(errorMessage);
+                    }
+                } else {
+                    formGroup.classList.remove('error');
+                    const errorMessage = formGroup.querySelector('.error-message');
+                    if (errorMessage) {
+                        errorMessage.remove();
+                    }
+                }
+            });
+
+            return isValid;
+        }
+
+        // 製品追加機能
+        function addProduct() {
+            const productList = document.getElementById('productList');
+            const productId = Date.now();
+            
+            const productHtml = `
+                <div class="product-item" id="product-${productId}">
+                    <button type="button" class="remove-btn" onclick="removeProduct(${productId})">削除</button>
+                    <div class="grid">
+                        <div class="form-group">
+                            <label>製品名<span class="required">*</span></label>
+                            <input type="text" name="products[${productId}].name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>価格<span class="required">*</span></label>
+                            <input type="number" name="products[${productId}].price" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>製品説明</label>
+                        <textarea name="products[${productId}].description" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>製品仕様</label>
+                        <textarea name="products[${productId}].specifications" rows="2"></textarea>
+                    </div>
+                </div>
+            `;
+
+            productList.insertAdjacentHTML('beforeend', productHtml);
+        }
+
+        // 製品削除機能
+        function removeProduct(productId) {
+            const product = document.getElementById(`product-${productId}`);
+            if (product) {
+                // モバイルでの削除時の確認
+                if (window.confirm('この製品情報を削除してもよろしいですか？')) {
+                    product.remove();
+                }
+            }
+        }
+
+        // フォーム送信処理
+        document.getElementById('makerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // バリデーションチェック
+            if (!validateForm()) {
+                // スマートフォンでは最初のエラー項目までスクロール
+                const firstError = document.querySelector('.form-group.error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+            
+            // FormDataオブジェクトの作成
+            const formData = new FormData(this);
+            
+            // APIに送信する処理を実装
+            console.log('送信データ:', Object.fromEntries(formData));
+            
+            // 送信成功時の処理
+            alert('登録が完了しました！');
+        });
+
+        // 下書き保存機能
+        function saveDraft() {
+            const formData = new FormData(document.getElementById('makerForm'));
+            const draftData = Object.fromEntries(formData);
+            
+            try {
+                // 下書きデータをローカルストレージに保存
+                localStorage.setItem('makerFormDraft', JSON.stringify(draftData));
+                alert('下書きを保存しました');
+            } catch (e) {
+                console.error('下書き保存エラー:', e);
+                alert('下書きの保存に失敗しました。');
+            }
+        }
+
+        // 下書きデータの読み込み
+        function loadDraft() {
+            try {
+                const draftData = localStorage.getItem('makerFormDraft');
+                if (draftData) {
+                    const data = JSON.parse(draftData);
+                    const form = document.getElementById('makerForm');
+                    
+                    // フォームに下書きデータを設定
+                    Object.entries(data).forEach(([key, value]) => {
+                        const input = form.querySelector(`[name="${key}"]`);
+                        if (input) {
+                            input.value = value;
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('下書き読み込みエラー:', e);
+            }
+        }
+
+        // 画像アップロード処理
+        const uploadArea = document.querySelector('.upload-area');
+        let isDragging = false;
+
+        uploadArea.addEventListener('dragenter', function(e) {
+            e.preventDefault();
+            isDragging = true;
+            this.style.borderColor = '#3498db';
+            this.style.backgroundColor = '#f8f9fa';
+        });
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            if (!isDragging) {
+                isDragging = true;
+                this.style.borderColor = '#3498db';
+                this.style.backgroundColor = '#f8f9fa';
+            }
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            isDragging = false;
+            this.style.borderColor = '#ddd';
+            this.style.backgroundColor = 'transparent';
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            isDragging = false;
+            this.style.borderColor = '#ddd';
+            this.style.backgroundColor = 'transparent';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFiles(files);
+            }
+        });
+
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            if (this.files.length > 0) {
+                handleFiles(this.files);
+            }
+        });
+
+        // ファイル処理
+        function handleFiles(files) {
+            // ファイルサイズと種類のバリデーション
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+            
+            let validFiles = [];
+            let errors = [];
+
+            Array.from(files).forEach(file => {
+                if (!allowedTypes.includes(file.type)) {
+                    errors.push(`${file.name}：未対応のファイル形式です`);
+                } else if (file.size > maxSize) {
+                    errors.push(`${file.name}：ファイルサイズが大きすぎます(5MB以下)`);
+                } else {
+                    validFiles.push(file);
+                }
+            });
+
+            if (errors.length > 0) {
+                alert(errors.join('\n'));
+            }
+
+            if (validFiles.length > 0) {
+                console.log('有効なファイル:', validFiles);
+                // ここでファイルのプレビューや送信処理を実装
+                alert(`${validFiles.length}個のファイルを選択しました`);
+            }
+        }
+
+        // ページ読み込み時に下書きデータを読み込む
+        document.addEventListener('DOMContentLoaded', loadDraft);
+    </script>
+</body>
+</html>

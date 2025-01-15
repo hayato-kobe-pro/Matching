@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マッチング履歴</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --border-color: #ddd;
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f5f5;
+            padding: 10px;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .filter-section {
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .filter-section {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .form-group {
+                margin-bottom: 0;
+            }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: white;
+        }
+
+        @media (min-width: 768px) {
+            input, select {
+                padding: 8px;
+                font-size: 14px;
+            }
+        }
+
+        /* PC用テーブルスタイル */
+        @media (min-width: 768px) {
+            .history-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+                display: table;
+            }
+
+            .history-table thead {
+                display: table-header-group;
+            }
+
+            .history-table tbody {
+                display: table-row-group;
+            }
+
+            .history-table tr {
+                display: table-row;
+            }
+
+            .history-table th,
+            .history-table td {
+                display: table-cell;
+                padding: 12px;
+                text-align: left;
+                border-bottom: 1px solid #eee;
+            }
+
+            .history-table th {
+                background-color: var(--bg-color);
+                font-weight: bold;
+            }
+
+            .mobile-label {
+                display: none;
+            }
+        }
+
+        /* モバイル用カードスタイル */
+        @media (max-width: 767px) {
+            .history-table {
+                margin-top: 15px;
+                width: 100%;
+            }
+
+            .history-table thead {
+                display: none;
+            }
+
+            .history-table tbody {
+                display: block;
+            }
+
+            .history-table tr {
+                display: block;
+                background-color: white;
+                padding: 15px;
+                margin-bottom: 15px;
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+            }
+
+            .history-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid #eee;
+            }
+
+            .history-table td:last-child {
+                border-bottom: none;
+            }
+
+            .mobile-label {
+                font-weight: bold;
+                margin-right: 10px;
+                width: 30%;
+            }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: white;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .status-completed {
+            background-color: var(--success-color);
+        }
+
+        .status-cancelled {
+            background-color: var(--danger-color);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+            background-color: var(--primary-color);
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .btn {
+                width: auto;
+                padding: 8px 15px;
+            }
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* タッチデバイス向けの最適化 */
+        @media (hover: none) {
+            .btn:hover {
+                opacity: 1;
+            }
+
+            select {
+                appearance: none;
+                background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+                background-repeat: no-repeat;
+                background-position: right 10px center;
+                background-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>マッチング履歴</h1>
+
+        <!-- フィルターセクション -->
+        <div class="filter-section">
+            <div class="form-group">
+                <label>期間</label>
+                <select id="periodFilter">
+                    <option value="all">すべて</option>
+                    <option value="1month">1ヶ月以内</option>
+                    <option value="3months">3ヶ月以内</option>
+                    <option value="6months">6ヶ月以内</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>メーカー</label>
+                <input type="text" id="makerFilter" placeholder="メーカー名で検索">
+            </div>
+            <div class="form-group">
+                <label>ステータス</label>
+                <select id="statusFilter">
+                    <option value="all">すべて</option>
+                    <option value="completed">開催済み</option>
+                    <option value="cancelled">キャンセル</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 履歴テーブル -->
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>開催日</th>
+                    <th>メーカー</th>
+                    <th>商品カテゴリー</th>
+                    <th>出展商品数</th>
+                    <th>ステータス</th>
+                    <th>詳細</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="mobile-label">開催日</span>2024/11/15</td>
+                    <td><span class="mobile-label">メーカー</span>テックメーカー株式会社</td>
+                    <td><span class="mobile-label">商品カテゴリー</span>電化製品</td>
+                    <td><span class="mobile-label">出展商品数</span>5</td>
+                    <td><span class="mobile-label">ステータス</span><span class="status-badge status-completed">開催済み</span></td>
+                    <td><span class="mobile-label">詳細</span><button class="btn" onclick="showDetail(1)">詳細</button></td>
+                </tr>
+                <tr>
+                    <td><span class="mobile-label">開催日</span>2024/11/10</td>
+                    <td><span class="mobile-label">メーカー</span>フードクリエイト</td>
+                    <td><span class="mobile-label">商品カテゴリー</span>食品</td>
+                    <td><span class="mobile-label">出展商品数</span>3</td>
+                    <td><span class="mobile-label">ステータス</span><span class="status-badge status-completed">開催済み</span></td>
+                    <td><span class="mobile-label">詳細</span><button class="btn" onclick="showDetail(2)">詳細</button></td>
+                </tr>
+                <tr>
+                    <td><span class="mobile-label">開催日</span>2024/11/05</td>
+                    <td><span class="mobile-label">メーカー</span>アパレルワークス</td>
+                    <td><span class="mobile-label">商品カテゴリー</span>ファッション</td>
+                    <td><span class="mobile-label">出展商品数</span>8</td>
+                    <td><span class="mobile-label">ステータス</span><span class="status-badge status-cancelled">キャンセル</span></td>
+                    <td><span class="mobile-label">詳細</span><button class="btn" onclick="showDetail(3)">詳細</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // フィルタリング機能の遅延処理
+        let filterTimeout;
+        
+        document.querySelectorAll('select, input').forEach(filter => {
+            filter.addEventListener('input', function() {
+                clearTimeout(filterTimeout);
+                filterTimeout = setTimeout(filterHistory, 300); // 300ms後に実行
+            });
+        });
+
+        function filterHistory() {
+            const period = document.getElementById('periodFilter').value;
+            const maker = document.getElementById('makerFilter').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+
+            const rows = document.querySelectorAll('.history-table tbody tr');
+
+            rows.forEach(row => {
+                const makerName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const statusText = row.querySelector('.status-badge').textContent.toLowerCase();
+
+                const matchesMaker = maker === '' || makerName.includes(maker);
+                const matchesStatus = status === 'all' || statusText.includes(status);
+
+                if (matchesMaker && matchesStatus) {
+                    row.style.display = '';
+                } else {
+                    row.style.animation = 'fadeOut 0.3s';
+                    setTimeout(() => {
+                        row.style.display = 'none';
+                    }, 300);
+                }
+            });
+        }
+
+        // 詳細表示機能
+        function showDetail(id) {
+            // モバイルデバイスの場合は新しいページで開く
+            if (window.innerWidth < 768) {
+                window.location.href = `/detail/${id}`;
+            } else {
+                // デスクトップの場合はモーダルで表示
+                alert(`ID: ${id} の詳細情報を表示します`);
+            }
+        }
+
+        // 画面サイズ変更時の表示最適化
+        window.addEventListener('resize', () => {
+            const isMobile = window.innerWidth < 768;
+            const buttons = document.querySelectorAll('.btn');
+            
+            buttons.forEach(button => {
+                if (isMobile) {
+                    button.style.width = '100%';
+                } else {
+                    button.style.width = 'auto';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

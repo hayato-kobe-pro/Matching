@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>同行スケジュール管理</title>
+    <!-- PDF生成用ライブラリ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        /* 既存のルート変数とリセット */
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+            --danger-color: #e74c3c;
+            --gray-color: #95a5a6;
+            --border-color: #ddd;
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 既存のベーススタイル */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f5f5;
+            padding: 10px;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* ヘッダーのスタイルを更新 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* 既存のスタイルを保持 */
+
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+            --danger-color: #e74c3c;
+            --gray-color: #95a5a6;
+            --border-color: #ddd;
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f5f5;
+            padding: 10px;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        h1, h2 {
+            font-size: 1.5rem;
+            color: var(--text-color);
+            margin-bottom: 15px;
+        }
+
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* フィルターセクション */
+        .filter-section {
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .filter-section {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: white;
+        }
+
+        @media (min-width: 768px) {
+            select, input, textarea {
+                padding: 8px;
+                font-size: 14px;
+            }
+        }
+
+        /* リクエストテーブル */
+        @media (min-width: 768px) {
+            .request-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+                display: table;
+            }
+
+            .request-table thead {
+                display: table-header-group;
+            }
+
+            .request-table tr {
+                display: table-row;
+            }
+
+            .request-table th,
+            .request-table td {
+                display: table-cell;
+                padding: 12px;
+                text-align: left;
+                border-bottom: 1px solid #eee;
+            }
+
+            .request-table th {
+                background-color: var(--bg-color);
+                font-weight: 600;
+            }
+        }
+
+        /* モバイル用カードビュー */
+        @media (max-width: 767px) {
+            .request-table, 
+            .request-table tbody,
+            .request-table tr {
+                display: block;
+            }
+
+            .request-table thead {
+                display: none;
+            }
+
+            .request-table tbody tr {
+                margin-bottom: 15px;
+                padding: 15px;
+                background-color: var(--bg-color);
+                border-radius: 8px;
+            }
+
+            .request-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .request-table td:last-child {
+                border-bottom: none;
+                flex-direction: column;
+                align-items: stretch;
+                margin-top: 10px;
+            }
+
+            .request-table td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                margin-right: 10px;
+            }
+
+            .action-buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .action-buttons .btn {
+                width: 100%;
+                padding: 12px;
+            }
+        }
+
+        /* ステータスバッジ */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .status-pending { background-color: var(--warning-color); }
+        .status-approved { background-color: var(--success-color); }
+        .status-rejected { background-color: var(--danger-color); }
+
+        /* ボタン */
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            color: white;
+            transition: opacity 0.3s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-success { background-color: var(--success-color); }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-gray { background-color: var(--gray-color); }
+
+        /* モーダル */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 20px auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+
+        @media (min-width: 768px) {
+            .modal-content {
+                margin: 10% auto;
+            }
+        }
+
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--bg-color);
+        }
+
+        .close:hover {
+            background-color: #eee;
+        }
+
+        .modal-footer {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .modal-footer {
+                flex-direction: row;
+                justify-content: flex-end;
+            }
+
+            .modal-footer .btn {
+                width: auto;
+            }
+        }
+
+        .note {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        /* エラー状態 */
+        .error {
+            border-color: var(--danger-color);
+            background-color: #fff6f6;
+        }
+
+        /* フィードバックメッセージ */
+        .feedback {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            z-index: 2000;
+            font-size: 14px;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        /* タッチデバイス向けの最適化 */
+        @media (hover: none) {
+            .btn:hover {
+                opacity: 1;
+            }
+
+            select {
+                appearance: none;
+                background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+                background-repeat: no-repeat;
+                background-position: right 10px center;
+                background-size: 1em;
+            }
+        }
+
+        /* アニメーション */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+
+
+        /* 印刷プレビューモーダル用の追加スタイル */
+        .print-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .print-modal-content {
+            position: relative;
+            background-color: white;
+            margin: 20px auto;
+            padding: 20px;
+            width: 95%;
+            max-width: 900px;
+            height: 90vh;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .print-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .preview-container {
+            flex: 1;
+            overflow-y: auto;
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 4px;
+        }
+
+        .preview-paper {
+            background-color: white;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 20mm;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* 印刷時のスタイル */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            
+            .preview-paper,
+            .preview-paper * {
+                visibility: visible;
+            }
+            
+            .preview-paper {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+                padding: 0;
+            }
+
+            .print-modal-header,
+            .btn {
+                display: none !important;
+            }
+        }
+
+        /* 残りの既存のスタイル */
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>同行スケジュール管理</h1>
+            <button class="btn" style="background-color: var(--primary-color);" onclick="showPrintModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 9V2h12v7"></path>
+                    <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"></path>
+                    <path d="M6 14h12v8H6z"></path>
+                </svg>
+                ダウンロード/印刷
+            </button>
+        </div>
+
+        <!-- 既存のコンテンツ -->
+        <!-- フィルターセクション -->
+        <div class="filter-section">
+            <div class="form-group">
+                <label>ステータス</label>
+                <select id="statusFilter">
+                    <option value="all">すべて</option>
+                    <option value="pending">未対応</option>
+                    <option value="approved">承認済み</option>
+                    <option value="rejected">拒否</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>主催店</label>
+                <select id="hostFilter">
+                    <option value="all">すべて</option>
+                    <option value="abc">ABC商事</option>
+                    <option value="xyz">XYZ株式会社</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>メーカー</label>
+                <select id="makerFilter">
+                    <option value="all">すべて</option>
+                    <option value="tech">テックメーカー</option>
+                    <option value="food">フードクリエイト</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>日付</label>
+                <input type="date" id="dateFilter">
+            </div>
+        </div>
+
+        <!-- リクエスト一覧 -->
+        <table class="request-table">
+            <thead>
+                <tr>
+                    <th>日時</th>
+                    <th>主催店</th>
+                    <th>メーカー</th>
+                    <th>ステータス</th>
+                    <th>担当者</th>
+                    <th>アクション</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-label="日時">2024/11/25 10:00-12:00</td>
+                    <td data-label="主催店">ABC商事</td>
+                    <td data-label="メーカー">テックメーカー</td>
+                    <td data-label="ステータス">
+                        <span class="status-badge status-pending">未対応</span>
+                    </td>
+                    <td data-label="担当者">田中太郎</td>
+                    <td data-label="アクション" class="action-buttons">
+                        <button class="btn btn-success" onclick="showApproveModal(1)">承認</button>
+                        <button class="btn btn-danger" onclick="showRejectModal(1)">拒否</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td data-label="日時">2024/11/26 13:00-15:00</td>
+                    <td data-label="主催店">XYZ株式会社</td>
+                    <td data-label="メーカー">フードクリエイト</td>
+                    <td data-label="ステータス">
+                        <span class="status-badge status-approved">承認済み</span>
+                    </td>
+                    <td data-label="担当者">鈴木花子</td>
+                    <td data-label="アクション">処理済み</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 承認モーダル -->
+    <div id="approveModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('approveModal')">&times;</span>
+            <h2>同行リクエスト承認</h2>
+            <div class="form-group">
+                <label>通知メール件名<span class="required">*</span></label>
+                <input type="text" id="approveSubject" value="同行リクエストが承認されました">
+            </div>
+            <div class="form-group">
+                <label>メール本文<span class="required">*</span></label>
+                <textarea id="approveMessage">同行リクエストが承認されました。
+
+日時：[日時]
+場所：[場所]
+担当：[担当者]
+
+ご確認よろしくお願いいたします。</textarea>
+                <div class="note">※ テンプレートの文言は自由に編集できます</div>
+            </div>
+            <div class="form-group">
+                <label>備考（社内用）</label>
+                <textarea id="approveNotes" placeholder="社内用の備考を入力してください"></textarea>
+                <div class="note">※ この内容は社内記録用で、送信メールには含まれません</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" onclick="approveRequest()">承認して通知する</button>
+                <button class="btn btn-gray" onclick="closeModal('approveModal')">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 拒否モーダル -->
+    <div id="rejectModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('rejectModal')">&times;</span>
+            <h2>同行リクエスト拒否</h2>
+            <div class="form-group">
+                <label>通知メール件名<span class="required">*</span></label>
+                <input type="text" id="rejectSubject" value="同行リクエストの件について">
+            </div>
+            <div class="form-group">
+                <label>メール本文<span class="required">*</span></label>
+                <textarea id="rejectMessage">申し訳ございませんが、下記の同行リクエストについてはスケジュールの都合により承れません。
+
+日時：[日時]
+場所：[場所]
+メーカー：[メーカー]
+
+他の日程でのご検討をお願いできますと幸いです。
+何卒よろしくお願いいたします。</textarea>
+                <div class="note">※ テンプレートの文言は自由に編集できます</div>
+            </div>
+            <div class="form-group">
+                <label>拒否理由（社内用）<span class="required">*</span></label>
+                <textarea id="rejectReason" placeholder="拒否理由を具体的に入力してください"></textarea>
+                <div class="note">※ この内容は社内記録用で、送信メールには含まれません</div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="rejectRequest()">拒否して通知する</button>
+                <button class="btn btn-gray" onclick="closeModal('rejectModal')">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- 印刷プレビューモーダル -->
+        <div id="printModal" class="print-modal">
+            <div class="print-modal-content">
+                <div class="print-modal-header">
+                    <h2>印刷プレビュー</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-success" onclick="downloadPDF()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            ダウンロード
+                        </button>
+                        <button class="btn btn-primary" onclick="printPreview()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 9V2h12v7"></path>
+                                <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"></path>
+                                <path d="M6 14h12v8H6z"></path>
+                            </svg>
+                            印刷
+                        </button>
+                        <button class="btn btn-gray" onclick="closeModal('printModal')">
+                            閉じる
+                        </button>
+                    </div>
+                </div>
+                <div class="preview-container">
+                    <div class="preview-paper" id="previewContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 既存のスクリプト
+        // デバイス判定
+        const isMobile = () => window.innerWidth < 768;
+
+        // フィルタリング処理（デバウンス付き）
+        let filterTimeout;
+        document.querySelectorAll('.filter-section select, .filter-section input').forEach(filter => {
+            filter.addEventListener('change', function() {
+                clearTimeout(filterTimeout);
+                filterTimeout = setTimeout(() => {
+                    filterRequests();
+                }, 300);
+            });
+        });
+
+        function filterRequests() {
+            const filters = {
+                status: document.getElementById('statusFilter').value,
+                host: document.getElementById('hostFilter').value,
+                maker: document.getElementById('makerFilter').value,
+                date: document.getElementById('dateFilter').value
+            };
+
+            const rows = document.querySelectorAll('.request-table tbody tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const matches = {
+                    status: filters.status === 'all' || row.querySelector('[data-label="ステータス"]').textContent.includes(
+                        filters.status === 'pending' ? '未対応' :
+                        filters.status === 'approved' ? '承認済み' :
+                        filters.status === 'rejected' ? '拒否' : ''
+                    ),
+                    host: filters.host === 'all' || row.querySelector('[data-label="主催店"]').textContent.includes(filters.host),
+                    maker: filters.maker === 'all' || row.querySelector('[data-label="メーカー"]').textContent.includes(filters.maker),
+                    date: !filters.date || row.querySelector('[data-label="日時"]').textContent.includes(filters.date)
+                };
+
+                const shouldShow = Object.values(matches).every(match => match);
+                
+                if (shouldShow) {
+                    row.style.display = '';
+                    row.classList.add('fade-in');
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            showFeedback(`${visibleCount}件のリクエストが見つかりました`);
+        }
+
+        // モーダル関連の処理
+        function showApproveModal(requestId) {
+            const row = document.querySelector(`.request-table tr[data-id="${requestId}"]`);
+            if (!row) return;
+
+            const modal = document.getElementById('approveModal');
+            const dateTime = row.querySelector('[data-label="日時"]').textContent;
+            const maker = row.querySelector('[data-label="メーカー"]').textContent;
+            
+            // メールテンプレートの更新
+            document.getElementById('approveMessage').value = 
+                document.getElementById('approveMessage').value
+                    .replace('[日時]', dateTime)
+                    .replace('[メーカー]', maker);
+
+            openModal(modal);
+            modal.dataset.requestId = requestId;
+
+            // モバイルの場合、入力フィールドが画面上部に表示されるようにスクロール
+            if (isMobile()) {
+                setTimeout(() => {
+                    document.getElementById('approveSubject').scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                }, 300);
+            }
+        }
+
+        function showRejectModal(requestId) {
+            const row = document.querySelector(`.request-table tr[data-id="${requestId}"]`);
+            if (!row) return;
+
+            const modal = document.getElementById('rejectModal');
+            const dateTime = row.querySelector('[data-label="日時"]').textContent;
+            const maker = row.querySelector('[data-label="メーカー"]').textContent;
+            
+            // メールテンプレートの更新
+            document.getElementById('rejectMessage').value = 
+                document.getElementById('rejectMessage').value
+                    .replace('[日時]', dateTime)
+                    .replace('[メーカー]', maker);
+
+            openModal(modal);
+            modal.dataset.requestId = requestId;
+
+            if (isMobile()) {
+                setTimeout(() => {
+                    document.getElementById('rejectSubject').scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                }, 300);
+            }
+        }
+
+        function openModal(modal) {
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+
+            if (isMobile()) {
+                modal.querySelector('.modal-content').scrollTop = 0;
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        // モーダルの外側クリックで閉じる
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal(event.target.id);
+            }
+        };
+
+        // フィードバック表示
+        function showFeedback(message, type = 'success') {
+            const feedback = document.createElement('div');
+            feedback.className = 'feedback fade-in';
+            feedback.style.backgroundColor = type === 'success' ? 
+                'rgba(46, 204, 113, 0.9)' : 'rgba(231, 76, 60, 0.9)';
+            feedback.textContent = message;
+            
+            document.body.appendChild(feedback);
+
+            setTimeout(() => {
+                feedback.style.opacity = '0';
+                feedback.style.transition = 'opacity 0.3s';
+                setTimeout(() => feedback.remove(), 300);
+            }, 2000);
+        }
+
+        // バリデーション
+        function validateForm(type) {
+            const fields = {
+                approve: {
+                    subject: document.getElementById('approveSubject'),
+                    message: document.getElementById('approveMessage')
+                },
+                reject: {
+                    subject: document.getElementById('rejectSubject'),
+                    message: document.getElementById('rejectMessage'),
+                    reason: document.getElementById('rejectReason')
+                }
+            };
+
+            const currentFields = fields[type];
+            let isValid = true;
+            let errorMessages = [];
+
+            Object.entries(currentFields).forEach(([key, field]) => {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    errorMessages.push(`${field.previousElementSibling.textContent.replace('*', '').trim()}を入力してください`);
+                    field.classList.add('error');
+                } else {
+                    field.classList.remove('error');
+                }
+            });
+
+            if (!isValid) {
+                showFeedback(errorMessages.join('\n'), 'error');
+            }
+
+            return isValid;
+        }
+
+        // 承認処理
+        async function approveRequest() {
+            if (!validateForm('approve')) return;
+
+            const data = {
+                requestId: document.getElementById('approveModal').dataset.requestId,
+                subject: document.getElementById('approveSubject').value.trim(),
+                message: document.getElementById('approveMessage').value.trim(),
+                notes: document.getElementById('approveNotes').value.trim()
+            };
+
+            try {
+                showLoadingOverlay();
+                // API呼び出しのシミュレーション
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                showFeedback('承認メールを送信しました');
+                closeModal('approveModal');
+                setTimeout(() => location.reload(), 1500);
+            } catch (error) {
+                console.error('承認処理エラー:', error);
+                showFeedback('処理に失敗しました。再度お試しください', 'error');
+            } finally {
+                hideLoadingOverlay();
+            }
+        }
+
+        // 拒否処理
+        async function rejectRequest() {
+            if (!validateForm('reject')) return;
+
+            const data = {
+                requestId: document.getElementById('rejectModal').dataset.requestId,
+                subject: document.getElementById('rejectSubject').value.trim(),
+                message: document.getElementById('rejectMessage').value.trim(),
+                reason: document.getElementById('rejectReason').value.trim()
+            };
+
+            try {
+                showLoadingOverlay();
+                // API呼び出しのシミュレーション
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                showFeedback('拒否メールを送信しました');
+                closeModal('rejectModal');
+                setTimeout(() => location.reload(), 1500);
+            } catch (error) {
+                console.error('拒否処理エラー:', error);
+                showFeedback('処理に失敗しました。再度お試しください', 'error');
+            } finally {
+                hideLoadingOverlay();
+            }
+        }
+
+        // ローディングオーバーレイ
+        function showLoadingOverlay() {
+            const overlay = document.createElement('div');
+            overlay.id = 'loadingOverlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+            `;
+            
+            const spinner = document.createElement('div');
+            spinner.style.cssText = `
+                width: 40px;
+                height: 40px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid var(--primary-color);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            `;
+            
+            overlay.appendChild(spinner);
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        // 画面サイズ変更時の処理
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (modal.style.display === 'block') {
+                        if (isMobile()) {
+                            modal.querySelector('.modal-content').scrollTop = 0;
+                        }
+                    }
+                });
+            }, 250);
+        });
+
+        // 初期表示時の処理
+        document.addEventListener('DOMContentLoaded', function() {
+            // データの初期読み込みなど
+            console.log('ページが読み込まれました');
+        });
+
+        // 印刷プレビューモーダルを表示
+        function showPrintModal() {
+            const modal = document.getElementById('printModal');
+            const previewContent = document.getElementById('previewContent');
+            
+            // 現在の日時を取得
+            const now = new Date();
+            const dateStr = now.toLocaleString('ja-JP', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // テーブルをコピー
+            const table = document.querySelector('.request-table').cloneNode(true);
+            
+            // アクション列を非表示
+            const actionCells = table.querySelectorAll('th:last-child, td:last-child');
+            actionCells.forEach(cell => cell.remove());
+
+            // フィルター条件を取得
+            const filters = {
+                status: document.getElementById('statusFilter'),
+                host: document.getElementById('hostFilter'),
+                maker: document.getElementById('makerFilter'),
+                date: document.getElementById('dateFilter')
+            };
+
+            let filterText = Object.entries(filters)
+                .filter(([_, element]) => element.value !== 'all' && element.value !== '')
+                .map(([key, element]) => `${element.previousElementSibling.textContent}: ${element.options?.[element.selectedIndex]?.text || element.value}`)
+                .join('、');
+
+            // プレビューコンテンツを生成
+            previewContent.innerHTML = `
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2>同行スケジュール一覧</h2>
+                    <p style="color: #666; font-size: 14px; margin-top: 10px;">出力日時: ${dateStr}</p>
+                    ${filterText ? `<p style="color: #666; font-size: 14px; margin-top: 5px;">検索条件: ${filterText}</p>` : ''}
+                </div>
+            `;
+            
+            // テーブルスタイルを最適化
+            table.style.width = '100%';
+            table.style.borderCollapse = 'collapse';
+            table.querySelectorAll('th, td').forEach(cell => {
+                cell.style.border = '1px solid #ddd';
+                cell.style.padding = '8px';
+                if (cell.tagName === 'TH') {
+                    cell.style.backgroundColor = '#f8f9fa';
+                }
+            });
+
+            previewContent.appendChild(table);
+            
+            // モーダルを表示
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // PDF形式でダウンロード
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const content = document.getElementById('previewContent');
+            
+            try {
+                // HTML要素をCanvasに変換
+                const canvas = await html2canvas(content, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                });
+                
+                // CanvasをPDFに変換
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgData = canvas.toDataURL('image/png');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`schedule_${new Date().toISOString().slice(0,10)}.pdf`);
+            } catch (error) {
+                console.error('PDF生成エラー:', error);
+                showFeedback('PDFの生成に失敗しました。', 'error');
+            }
+        }
+
+        // 印刷プレビューを表示
+        function printPreview() {
+            window.print();
+        }
+
+        // モーダルのイベントリスナーを更新
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                const modalId = event.target.id;
+                closeModal(modalId);
+            }
+        };
+    </script>
+</body>
+</html>

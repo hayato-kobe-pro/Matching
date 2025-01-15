@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>メーカー一覧</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --warning-color: #f1c40f;
+            --danger-color: #e74c3c;
+            --gray-color: #95a5a6;
+            --border-color: #ddd;
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f5f5;
+            padding: 10px;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                padding: 30px;
+            }
+        }
+
+        /* ヘッダーセクション */
+        .header-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .header-actions {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .action-buttons .btn-warning,
+        .action-buttons .btn-primary {
+            width: calc(50% - 5px); /* 5pxはgapの半分 */
+        }
+
+        .action-buttons .btn-success {
+            width: 100%;
+        }
+
+        /* CSVボタン用のラッパー */
+        .csv-buttons-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .action-buttons {
+                flex-direction: row;
+            }
+            
+            .action-buttons .btn {
+                width: auto;
+            }
+
+            .csv-buttons-wrapper {
+                display: contents;
+            }
+        }
+
+        /* 検索セクション */
+        .search-section {
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .search-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .search-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .form-group {
+                margin-bottom: 0;
+            }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        @media (min-width: 768px) {
+            input, select {
+                padding: 8px;
+                font-size: 14px;
+            }
+        }
+
+        /* ボタン */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            color: white;
+            transition: opacity 0.3s;
+            width: 100%;
+            text-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .btn {
+                width: auto;
+                padding: 8px 15px;
+                font-size: 14px;
+            }
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-success { background-color: var(--success-color); }
+        .btn-warning { background-color: var(--warning-color); color: #333; }
+        .btn-danger { background-color: var(--danger-color); }
+
+        /* メーカーテーブル/カード */
+        @media (min-width: 768px) {
+            .maker-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+
+            .maker-table thead {
+                display: table-header-group;
+            }
+
+            .maker-table tbody {
+                display: table-row-group;
+            }
+
+            .maker-table tr {
+                display: table-row;
+            }
+
+            .maker-table th,
+            .maker-table td {
+                display: table-cell;
+                padding: 12px;
+                text-align: left;
+                border-bottom: 1px solid #eee;
+            }
+
+            .maker-table th {
+                background-color: var(--bg-color);
+                font-weight: bold;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .maker-table,
+            .maker-table tbody,
+            .maker-table thead,
+            .maker-table tr {
+                display: block;
+            }
+
+            .maker-table thead {
+                display: none;
+            }
+
+            .maker-table tbody tr {
+                margin-bottom: 15px;
+                padding: 15px;
+                background-color: var(--bg-color);
+                border-radius: 8px;
+                position: relative;
+            }
+
+            .maker-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .maker-table td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                margin-right: 10px;
+            }
+
+            .maker-table td:last-child {
+                border-bottom: none;
+                margin-top: 10px;
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        /* ステータスバッジ */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .status-active { background-color: var(--success-color); }
+        .status-inactive { background-color: var(--gray-color); }
+
+        /* モーダル */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: white;
+            margin: 20px auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 8px;
+        }
+
+        @media (min-width: 768px) {
+            .modal-content {
+                margin: 10% auto;
+            }
+        }
+
+        .close {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--bg-color);
+        }
+
+        .close:hover {
+            background-color: #eee;
+        }
+
+        /* ファイルアップロードエリア */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background-color: var(--bg-color);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary-color);
+            background-color: var(--bg-color);
+        }
+
+        /* ページネーション */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            min-width: 40px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 767px) {
+            .pagination button {
+                padding: 12px 16px;
+                font-size: 16px;
+            }
+        }
+
+        .pagination button.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* タッチデバイス向けの最適化 */
+        @media (hover: none) {
+            .btn:hover,
+            .upload-area:hover,
+            .pagination button:hover {
+                opacity: 1;
+            }
+
+            select {
+                appearance: none;
+                background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+                background-repeat: no-repeat;
+                background-position: right 10px center;
+                background-size: 1em;
+            }
+        }
+
+        /* フィードバックメッセージ */
+        .feedback {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            z-index: 2000;
+            font-size: 14px;
+            text-align: center;
+            max-width: 90%;
+        }
+
+        /* アニメーション */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        /* ローディングスピナー */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-actions">
+            <h1>メーカー一覧</h1>
+            <div class="action-buttons">
+                <button class="btn btn-success" onclick="location.href='maker-registration.html'">新規メーカー追加</button>
+                <div class="csv-buttons-wrapper">
+                    <button class="btn btn-warning" onclick="showCsvModal()">CSV一括登録</button>
+                    <button class="btn btn-primary" onclick="exportCsv()">CSVエクスポート</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 検索セクション -->
+        <div class="search-section">
+            <div class="search-grid">
+                <div class="form-group">
+                    <label>メーカー名</label>
+                    <input type="text" id="makerSearch" placeholder="メーカー名で検索">
+                </div>
+                <div class="form-group">
+                    <label>カテゴリー</label>
+                    <select id="categoryFilter">
+                        <option value="">すべて</option>
+                        <option value="electronics">電化製品</option>
+                        <option value="food">食品</option>
+                        <option value="fashion">ファッション</option>
+                        <option value="cosmetics">化粧品</option>
+                        <option value="furniture">家具</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ステータス</label>
+                    <select id="statusFilter">
+                        <option value="">すべて</option>
+                        <option value="active">有効</option>
+                        <option value="inactive">無効</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- メーカー一覧 -->
+        <table class="maker-table">
+            <thead>
+                <tr>
+                    <th>メーカー名</th>
+                    <th>カテゴリー</th>
+                    <th>担当者</th>
+                    <th>登録商品数</th>
+                    <th>ステータス</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td data-label="メーカー名">テックメーカー株式会社</td>
+                    <td data-label="カテゴリー">電化製品</td>
+                    <td data-label="担当者">山田太郎</td>
+                    <td data-label="登録商品数">15</td>
+                    <td data-label="ステータス">
+                        <span class="status-badge status-active">有効</span>
+                    </td>
+                    <td data-label="操作">
+                        <button class="btn btn-primary" onclick="editMaker(1)">編集</button>
+                        <button class="btn btn-danger" onclick="showDeleteConfirmModal(1)">削除</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td data-label="メーカー名">フードクリエイト</td>
+                    <td data-label="カテゴリー">食品</td>
+                    <td data-label="担当者">鈴木花子</td>
+                    <td data-label="登録商品数">8</td>
+                    <td data-label="ステータス">
+                        <span class="status-badge status-active">有効</span>
+                    </td>
+                    <td data-label="操作">
+                        <button class="btn btn-primary" onclick="editMaker(2)">編集</button>
+                        <button class="btn btn-danger" onclick="showDeleteConfirmModal(2)">削除</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td data-label="メーカー名">スタイルワークス</td>
+                    <td data-label="カテゴリー">ファッション</td>
+                    <td data-label="担当者">佐藤一郎</td>
+                    <td data-label="登録商品数">12</td>
+                    <td data-label="ステータス">
+                        <span class="status-badge status-inactive">無効</span>
+                    </td>
+                    <td data-label="操作">
+                        <button class="btn btn-primary" onclick="editMaker(3)">編集</button>
+                        <button class="btn btn-danger" onclick="showDeleteConfirmModal(3)">削除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ページネーション -->
+        <div class="pagination">
+            <button>前へ</button>
+            <button>1</button>
+            <button class="active">2</button>
+            <button>3</button>
+            <button>次へ</button>
+        </div>
+    </div>
+
+    <!-- CSV一括登録モーダル -->
+    <div id="csvModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('csvModal')">&times;</span>
+            <h2>CSV一括登録</h2>
+            <div class="upload-area" id="uploadArea">
+                <div>
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 24px; margin-bottom: 10px;"></i>
+                    <div>クリックしてCSVファイルを選択</div>
+                    <div>またはファイルをドラッグ＆ドロップ</div>
+                </div>
+            </div>
+            <input type="file" id="csvFile" accept=".csv" style="display: none">
+            <button class="btn btn-success" onclick="uploadCsv()">アップロード</button>
+            <div style="margin-top: 20px; text-align: center;">
+                <a href="#" onclick="downloadTemplate()" style="color: var(--primary-color);">
+                    CSVテンプレートをダウンロード
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 削除確認モーダル -->
+    <div id="deleteConfirmModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('deleteConfirmModal')">&times;</span>
+            <h2>メーカー削除</h2>
+            <p style="margin: 20px 0;">このメーカーを削除してもよろしいですか？</p>
+            <p style="color: var(--danger-color); margin-bottom: 20px;">
+                ※ この操作は取り消せません。
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn btn-danger" onclick="deleteMaker()">削除する</button>
+                <button class="btn btn-gray" onclick="closeModal('deleteConfirmModal')">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // デバイス判定
+        const isMobile = () => window.innerWidth < 768;
+
+        // 検索機能（デバウンス処理付き）
+        let searchTimeout;
+        document.querySelectorAll('.search-section input, .search-section select').forEach(element => {
+            element.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    filterMakers();
+                }, 300);
+            });
+        });
+
+        // メーカーの検索・フィルタリング
+        function filterMakers() {
+            const searchText = document.getElementById('makerSearch').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const status = document.getElementById('statusFilter').value;
+
+            const rows = document.querySelectorAll('.maker-table tbody tr');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const makerName = row.querySelector('[data-label="メーカー名"]').textContent.toLowerCase();
+                const rowCategory = row.querySelector('[data-label="カテゴリー"]').textContent;
+                const rowStatus = row.querySelector('.status-badge').textContent;
+
+                const matches = {
+                    name: makerName.includes(searchText),
+                    category: !category || rowCategory === category,
+                    status: !status || (
+                        status === 'active' && rowStatus === '有効' ||
+                        status === 'inactive' && rowStatus === '無効'
+                    )
+                };
+
+                const shouldShow = Object.values(matches).every(match => match);
+
+                if (shouldShow) {
+                    row.style.display = '';
+                    row.classList.add('fade-in');
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            showFeedback(`${visibleCount}件のメーカーが見つかりました`);
+        }
+
+        // フィードバック表示
+        function showFeedback(message, type = 'success') {
+            const feedback = document.createElement('div');
+            feedback.className = 'feedback fade-in';
+            feedback.style.backgroundColor = 
+                type === 'success' ? 'rgba(46, 204, 113, 0.9)' :
+                type === 'error' ? 'rgba(231, 76, 60, 0.9)' :
+                'rgba(0, 0, 0, 0.8)';
+            feedback.textContent = message;
+            
+            document.body.appendChild(feedback);
+
+            setTimeout(() => {
+                feedback.style.opacity = '0';
+                feedback.style.transition = 'opacity 0.3s';
+                setTimeout(() => feedback.remove(), 300);
+            }, 2000);
+        }
+
+        // CSV関連の処理
+        function showCsvModal() {
+            document.getElementById('csvModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // ファイルアップロード処理
+        const uploadArea = document.getElementById('uploadArea');
+        const csvFileInput = document.getElementById('csvFile');
+
+        uploadArea.addEventListener('click', () => csvFileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        csvFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.endsWith('.csv')) {
+                showFeedback('CSVファイルを選択してください', 'error');
+                return;
+            }
+
+            // ファイルサイズチェック（5MB以下）
+            if (file.size > 5 * 1024 * 1024) {
+                showFeedback('ファイルサイズは5MB以下にしてください', 'error');
+                return;
+            }
+
+            showLoadingOverlay();
+            
+            // ファイルアップロード処理のシミュレーション
+            setTimeout(() => {
+                hideLoadingOverlay();
+                closeModal('csvModal');
+                showFeedback('CSVファイルをアップロードしました');
+                location.reload();
+            }, 1500);
+        }
+
+        function downloadTemplate() {
+            showFeedback('CSVテンプレートをダウンロードしました');
+        }
+
+        function exportCsv() {
+            showFeedback('メーカー一覧をエクスポートしました');
+        }
+
+        // 編集・削除処理
+        function editMaker(id) {
+            location.href = `maker-registration.html?id=${id}`;
+        }
+
+        let deleteTargetId = null;
+
+        function showDeleteConfirmModal(id) {
+            deleteTargetId = id;
+            document.getElementById('deleteConfirmModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        async function deleteMaker() {
+            if (!deleteTargetId) return;
+
+            try {
+                showLoadingOverlay();
+                // 削除処理のシミュレーション
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                closeModal('deleteConfirmModal');
+                showFeedback('メーカーを削除しました');
+                
+                // 画面の更新（実際はAPI応答後に行う）
+                setTimeout(() => location.reload(), 1500);
+            } catch (error) {
+                console.error('削除エラー:', error);
+                showFeedback('削除に失敗しました。再度お試しください', 'error');
+            } finally {
+                hideLoadingOverlay();
+            }
+        }
+
+        // モーダル管理
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        // 外側をクリックしてモーダルを閉じる
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal(event.target.id);
+            }
+        };
+
+        // ローディングオーバーレイ
+        function showLoadingOverlay() {
+            const overlay = document.createElement('div');
+            overlay.id = 'loadingOverlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+            `;
+            
+            const spinner = document.createElement('div');
+            spinner.style.cssText = `
+                width: 40px;
+                height: 40px;
+                border: 4px solid #f3f3f3;
+                border-top: 4px solid var(--primary-color);
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            `;
+            
+            overlay.appendChild(spinner);
+            document.body.appendChild(overlay);
+        }
+
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        // 画面サイズ変更時の処理
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(modal => {
+                    if (modal.style.display === 'block') {
+                        if (isMobile()) {
+                            modal.querySelector('.modal-content').scrollTop = 0;
+                        }
+                    }
+                });
+            }, 250);
+        });
+    </script>
+</body>
+</html>
